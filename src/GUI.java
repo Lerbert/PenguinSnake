@@ -49,16 +49,29 @@ public class GUI {
 		
 		ButtonGroup levelButtons = new ButtonGroup();
 		
-		JRadioButtonMenuItem classic = new JRadioButtonMenuItem("Classic");
-		classic.addActionListener(levelListener);
-		classic.setSelected(true);
-		levelButtons.add(classic);
-		levels.add(classic);
+		for (int i = 0; i < LevelFactory.levelNames.length; i++) {
+			JRadioButtonMenuItem level = new JRadioButtonMenuItem(LevelFactory.levelNames[i]);
+			level.addActionListener(levelListener);
+			level.setActionCommand(Integer.toString(i));
+			levelButtons.add(level);
+			levels.add(level);
+			if (i == 0) {
+				level.setSelected(true);
+			}
+		}
 		
-		JRadioButtonMenuItem arena = new JRadioButtonMenuItem("Arena");
-		arena.addActionListener(levelListener);
-		levelButtons.add(arena);
-		levels.add(arena);
+//		JRadioButtonMenuItem classic = new JRadioButtonMenuItem("Classic");
+//		classic.addActionListener(levelListener);
+//		classic.setActionCommand("0");
+//		classic.setSelected(true);
+//		levelButtons.add(classic);
+//		levels.add(classic);
+//		
+//		JRadioButtonMenuItem arena = new JRadioButtonMenuItem("Arena");
+//		arena.addActionListener(levelListener);
+//		arena.setActionCommand("1");
+//		levelButtons.add(arena);
+//		levels.add(arena);
 		
 		menubar.add(levels);
 		
@@ -88,6 +101,7 @@ public class GUI {
 				this.state[x][y] = state[x][y];
 			}
 		}
+		
 		fieldPanel.repaint();
 	}
 	

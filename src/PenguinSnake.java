@@ -11,6 +11,7 @@ public class PenguinSnake {
 	public static final int SNAKE_BODY = 2;
 	
 	private Level level;
+	private volatile Level nextLevel;
 	
 	private volatile Direction direction;
 	private volatile Direction lockedDirection;
@@ -27,7 +28,7 @@ public class PenguinSnake {
 	
 	public PenguinSnake() {
 		snake = new ArrayList<Integer>();
-		level = LevelFactory.createClassicLevel();
+		level = LevelFactory.createLevel(0);
 		gui = new GUI(level.getMaze(), new LevelListener());
 		gui.getFrame().addKeyListener(new KeyHandler());
 		init(level);
@@ -43,6 +44,7 @@ public class PenguinSnake {
 				if (checkCollision(next)) {
 					finished = true;
 					System.out.println("Game over!\nScore: " + score);
+					System.out.println("Choose another level to continue or hit ESC to quit");
 					continue;
 				}
 				// update snake
@@ -71,6 +73,16 @@ public class PenguinSnake {
 				ex.printStackTrace();
 			}
 		}
+		
+		while (nextLevel == null) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		init(nextLevel);
 	}
 	
 	private int move() {
@@ -170,13 +182,20 @@ public class PenguinSnake {
 		return (x << 16) | (y & 0xFFFF);
 	}
 	
+	private void requestRestart(Level level) {
+		System.out.println("Starting level \"" + level.getName() + "\"...");
+		finished = true;
+		nextLevel = level;
+	}
+	
 	private void init(Level level) {
 		score = 0;
 		finished = false;
-		paused = false;
+		paused = true;
 		snake.clear();
 		
 		this.level = level;
+		this.nextLevel = null;
 		 
 		int x = level.getStartX();
 		int y = level.getStartY();
@@ -195,11 +214,14 @@ public class PenguinSnake {
 		// sort of fix image loading
 		System.out.println("Loading images...");
 		try { 
-			Thread.sleep(3000);
+			Thread.sleep(2000);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		System.out.println("Finished loading");
 		display();
+		
+		System.out.println("Hit space to start");
 		
 		gameLoop();
 	}
@@ -249,14 +271,8 @@ public class PenguinSnake {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String levelName = e.getActionCommand();
-			
-			switch (levelName) {
-				case "Classic":
-					break;
-				case "Arena":
-					break;
-			}
+			int levelIndex = Integer.parseInt(e.getActionCommand());
+			requestRestart(LevelFactory.createLevel(levelIndex));
 		}
 		
 	}

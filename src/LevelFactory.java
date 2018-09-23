@@ -1,5 +1,17 @@
 
 public class LevelFactory {
+	public static final String[] levelNames = {"Classic", "Arena"};
+	private static final LevelCreator[] creators = {LevelFactory::createClassicLevel, LevelFactory::createArenaLevel};
+	
+	public static Level createLevel(int index) {
+		if (index < 0 || index >= creators.length) {
+			System.err.println("Level creation index out of bounds.");
+			return null;
+		}
+		
+		return creators[index].create();
+	}
+	
 	public static Level createClassicLevel() {
 		int[][] level0 = new int[20][20];
 
@@ -30,5 +42,9 @@ public class LevelFactory {
 	    }
 	    
 	    return new Level(level1, "Arena", 9, 9, Direction.DOWN);
+	}
+	
+	private interface LevelCreator {
+		public Level create();
 	}
 }
