@@ -1,3 +1,5 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class PenguinSnake {
 		width = 20;
 		height = 20;
 		
-		maze = generateLevel1();
+		maze = generateLevel0();
 		
 		snake = new ArrayList<Integer>();
 		snake.add(pos(9, 9));
@@ -50,7 +52,7 @@ public class PenguinSnake {
 		finished = false;
 		pause = false;
 		
-		gui = new GUI(maze);
+		gui = new GUI(maze, new LevelListener());
 		gui.getFrame().addKeyListener(new KeyHandler());
 		
 		display();
@@ -284,5 +286,14 @@ public class PenguinSnake {
 				break;
 			}
 		}
+	}
+	
+	private class LevelListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			System.out.println("Level");
+		}
+		
 	}
 }

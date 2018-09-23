@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -7,10 +8,15 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 
 public class GUI {
 	private static final int IWH = 40;
@@ -23,7 +29,7 @@ public class GUI {
 
 	private int[][] state;
 
-	public GUI(int[][] startState) {
+	public GUI(int[][] startState, ActionListener levelListener) {
 		// Load images
 		for (int i = 1; i <= 2; i++) {
 			File f = new File("tux" + i + ".png");
@@ -31,14 +37,6 @@ public class GUI {
 				penguins[i-1] = Toolkit.getDefaultToolkit().getImage(f.getAbsolutePath());
 			}
 		}
-		
-//		System.out.println("Loading images...");
-//
-//		try { 
-//			Thread.sleep(3000);
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
 
 		state = new int[startState.length][startState[0].length];
 
@@ -49,8 +47,30 @@ public class GUI {
 		}
 		
 		frame = new JFrame("PenguinSnake");
-		fieldPanel = new JPanel();
+		frame.setLayout(new BorderLayout());
 		
+		JMenuBar menubar = new JMenuBar();
+		
+		JMenu levels = new JMenu("Level");
+		
+		ButtonGroup levelButtons = new ButtonGroup();
+		
+		JRadioButtonMenuItem classic = new JRadioButtonMenuItem("Classic");
+		classic.addActionListener(levelListener);
+		classic.setSelected(true);
+		levelButtons.add(classic);
+		levels.add(classic);
+		
+		JRadioButtonMenuItem arena = new JRadioButtonMenuItem("Arena");
+		arena.addActionListener(levelListener);
+		levelButtons.add(arena);
+		levels.add(arena);
+		
+		menubar.add(levels);
+		
+		frame.add(menubar, BorderLayout.NORTH);
+		
+		fieldPanel = new JPanel();
 		//init fieldPanel
 		for (int y = 0; y < state[0].length; y++) {
 			for (int x = 0; x < state.length; x++) {
@@ -59,13 +79,12 @@ public class GUI {
 		}
 		
 		fieldPanel.setLayout(new GridLayout(state[0].length, state.length));
-	    frame.getContentPane().add(fieldPanel);
+	    frame.add(fieldPanel, BorderLayout.CENTER);
 	    frame.setSize
 	      ((int)(IWH * scale) * state.length,
 	       (int)(IWH * scale) * state[0].length);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    frame.setResizable(false);
-	    // frame.addKeyListener(new KeyHandler());
 	    frame.setVisible(true);
 	}
 	
