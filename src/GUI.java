@@ -38,13 +38,7 @@ public class GUI {
 			}
 		}
 
-		state = new int[startState.length][startState[0].length];
-
-		for (int i = 0; i < startState.length; i++) {
-			for (int j = 0; j < startState[0].length; j++) {
-				state[i][j] = startState[i][j];
-			}
-		}
+		state = startState;
 		
 		frame = new JFrame("PenguinSnake");
 		frame.setLayout(new BorderLayout());
@@ -116,7 +110,7 @@ public class GUI {
 
 		public void paint(Graphics g) {
 			super.paint(g);
-			if (state[x][y] == PenguinSnake.WALL) {
+			if (state[x][y] == Level.WALL) {
 				GradientPaint gradient =
 						new GradientPaint(10, 50, Color.GRAY, getWidth(), 0, Color.DARK_GRAY);
 				((Graphics2D) g).setPaint(gradient);

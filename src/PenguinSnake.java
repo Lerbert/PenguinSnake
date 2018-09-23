@@ -6,66 +6,31 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class PenguinSnake {
-	public static final int WALL = -3;
-	public static final int FREE = -2;
-	public static final int OUTSIDE = -1;
 	public static final int FOOD = 0;
 	public static final int SNAKE_HEAD = 1;
 	public static final int SNAKE_BODY = 2;
 	
-	private int width;
-	private int height;
-	
-	private int[][] maze;
-	private int food;
+	private Level level;
 	
 	private volatile Direction direction;
 	private volatile Direction lockedDirection;
 	
-	private boolean finished;
-	private boolean pause;
-	
 	private ArrayList<Integer> snake;
 	private int head; // still in list
+	private int food;
 	
 	private int score;
+	private boolean finished;
+	private boolean paused;
 	
 	private GUI gui;
 	
 	public PenguinSnake() {
-		score = 0;
-		
-		width = 20;
-		height = 20;
-		
-		maze = generateLevel0();
-		
 		snake = new ArrayList<Integer>();
-		snake.add(pos(9, 9));
-		head = pos(9, 9);
-		
-		generateFood();
-		
-		direction = Direction.DOWN;
-		lockedDirection = Direction.UP;
-		
-		finished = false;
-		pause = false;
-		
-		gui = new GUI(maze, new LevelListener());
+		level = LevelFactory.createClassicLevel();
+		gui = new GUI(level.getMaze(), new LevelListener());
 		gui.getFrame().addKeyListener(new KeyHandler());
-		
-		display();
-		// sort of fix image loading
-		System.out.println("Loading images...");
-		try { 
-			Thread.sleep(3000);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		display();
-		
-		gameLoop();
+		init(level);
 	}
 	
 	private void gameLoop() {
@@ -73,7 +38,7 @@ public class PenguinSnake {
 		int untilReduce = 5;
 		
 		while(!finished) {
-			if (!pause) {
+			if (!paused) {
 				int next = move();
 				if (checkCollision(next)) {
 					finished = true;
@@ -117,18 +82,14 @@ public class PenguinSnake {
 		switch (direction) {
 			case UP:
 				nextY--;
-				lockedDirection = Direction.DOWN;
 				break;
 			case DOWN:
 				nextY++;
-				lockedDirection = Direction.UP;
 				break;
 			case LEFT:
 				nextX--;
-				lockedDirection = Direction.RIGHT;
 				break;
 			case RIGHT:
-				lockedDirection = Direction.LEFT;
 				nextX++;
 				break;
 			default:
@@ -136,23 +97,25 @@ public class PenguinSnake {
 				throw new RuntimeException("Undefined Direction!");
 		}
 		
+		lockedDirection = Direction.opposite(direction);
+		
 		return wrapPosition(nextX, nextY);
 	}
 	
 	private int wrapPosition(int x, int y) {
 		
-		x += width;
-		x %= width;
+		x += level.getWidth();
+		x %= level.getWidth();
 		
-		y += height;
-		y %= height;
+		y += level.getHeight();
+		y %= level.getHeight();
 		
 		return pos(x, y);
 	}
 	
 	private boolean checkCollision(int pos) {
 		boolean collideSnake = snake.contains(pos);
-		boolean collideWall = maze[xPos(pos)][yPos(pos)] == WALL;
+		boolean collideWall = level.getMaze()[xPos(pos)][yPos(pos)] == Level.WALL;
 		
 		return collideSnake || collideWall;
 	}
@@ -167,21 +130,15 @@ public class PenguinSnake {
 		int y;
 		
 		do {
-		x = r.nextInt(width);
-		y = r.nextInt(height);
-		} while (maze[x][y] != FREE || snake.contains(pos(x, y)));
+		x = r.nextInt(level.getWidth());
+		y = r.nextInt(level.getHeight());
+		} while (level.getMaze()[x][y] != Level.FREE || snake.contains(pos(x, y)));
 		
 		food = pos(x, y);
 	}
 	
 	private void display() {
-		int[][] dis = new int[maze.length][maze[0].length];
-		
-		for (int i = 0; i < maze.length; i++) {
-			for (int j = 0; j < maze[0].length; j++) {
-				dis[i][j] = maze[i][j];
-			}
-		}
+		int[][] dis = level.getMaze();
 		
 		dis[xPos(food)][yPos(food)] = FOOD;
 		
@@ -213,38 +170,38 @@ public class PenguinSnake {
 		return (x << 16) | (y & 0xFFFF);
 	}
 	
-	// Classic
-	private int[][] generateLevel0() {
-		int[][] level0 = new int[width][height];
+	private void init(Level level) {
+		score = 0;
+		finished = false;
+		paused = false;
+		snake.clear();
 		
-	    for (int i = 0; i < level0.length; i++) {
-	      for (int j = 0; j < level0[i].length; j++) {
-	        level0[i][j] = FREE;
-	      }
-	    }
-	    
-	    return level0;
-	}
-	
-	// Arena
-	private int[][] generateLevel1() {
-		int[][] level1 = new int[width][height];
-
-	    for (int i = 0; i < level1.length; i++) {
-	      for (int j = 0; j < level1[i].length; j++) {
-	        level1[i][j] = FREE;
-	      }
-	      level1[i][0] = WALL;
-	      level1[i][level1[i].length - 1] = WALL;
-	    }
-	    for (int j = 0; j < level1[0].length; j++) {
-	      level1[0][j] = WALL;
-	    }
-	    for (int j = 0; j < level1[level1.length - 1].length; j++) {
-	      level1[level1.length - 1][j] = WALL;
-	    }
-	    
-	    return level1;
+		this.level = level;
+		 
+		int x = level.getStartX();
+		int y = level.getStartY();
+		
+		snake.add(pos(x, y));
+		head = pos(x, y);
+		
+		generateFood();
+		
+		direction = level.getStartDirection();
+		lockedDirection = Direction.opposite(direction);
+		
+		gui.updateState(level.getMaze());
+		
+		display();
+		// sort of fix image loading
+		System.out.println("Loading images...");
+		try { 
+			Thread.sleep(3000);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		display();
+		
+		gameLoop();
 	}
 	
 	public static void main(String[] args) {
@@ -259,26 +216,26 @@ public class PenguinSnake {
 				System.exit(0);
 				break;
 			case KeyEvent.VK_SPACE:
-				pause = !pause;
-				System.out.println(pause?"break":"continue");
+				paused = !paused;
+				System.out.println(paused?"break":"continue");
 				break;
 			case KeyEvent.VK_LEFT:
-				if (!pause && Direction.LEFT != lockedDirection) {
+				if (!paused && Direction.LEFT != lockedDirection) {
 					direction = Direction.LEFT;
 				}
 				break;
 			case KeyEvent.VK_RIGHT:
-				if (!pause && Direction.RIGHT != lockedDirection) {
+				if (!paused && Direction.RIGHT != lockedDirection) {
 					direction = Direction.RIGHT;
 				}
 				break;
 			case KeyEvent.VK_UP:
-				if (!pause && Direction.UP != lockedDirection) {
+				if (!paused && Direction.UP != lockedDirection) {
 					direction = Direction.UP;
 				}
 				break;
 			case KeyEvent.VK_DOWN:
-				if (!pause && Direction.DOWN != lockedDirection) {
+				if (!paused && Direction.DOWN != lockedDirection) {
 					direction = Direction.DOWN;
 				}
 				break;
@@ -291,8 +248,15 @@ public class PenguinSnake {
 	private class LevelListener implements ActionListener {
 
 		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			System.out.println("Level");
+		public void actionPerformed(ActionEvent e) {
+			String levelName = e.getActionCommand();
+			
+			switch (levelName) {
+				case "Classic":
+					break;
+				case "Arena":
+					break;
+			}
 		}
 		
 	}
