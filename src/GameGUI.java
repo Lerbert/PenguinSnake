@@ -18,7 +18,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
-public class GUI {
+public class GameGUI {
 	private static final int IWH = 40;
 	private static double scale = 1.0;
 	
@@ -29,7 +29,7 @@ public class GUI {
 
 	private int[][] state;
 
-	public GUI(int[][] startState, ActionListener levelListener) {
+	public GameGUI(int[][] startState, ActionListener levelListener) {
 		// Load images
 		for (int i = 1; i <= 2; i++) {
 			File f = new File("tux" + i + ".png");
@@ -59,19 +59,6 @@ public class GUI {
 				level.setSelected(true);
 			}
 		}
-		
-//		JRadioButtonMenuItem classic = new JRadioButtonMenuItem("Classic");
-//		classic.addActionListener(levelListener);
-//		classic.setActionCommand("0");
-//		classic.setSelected(true);
-//		levelButtons.add(classic);
-//		levels.add(classic);
-//		
-//		JRadioButtonMenuItem arena = new JRadioButtonMenuItem("Arena");
-//		arena.addActionListener(levelListener);
-//		arena.setActionCommand("1");
-//		levelButtons.add(arena);
-//		levels.add(arena);
 		
 		menubar.add(levels);
 		

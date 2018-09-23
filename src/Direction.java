@@ -1,6 +1,12 @@
 
 public enum Direction {
-	UP,DOWN,LEFT,RIGHT;
+	UP("Up"),DOWN("Down"),LEFT("Left"),RIGHT("Right");
+	
+	private final String desc;
+	
+	private Direction(String desc) {
+		this.desc = desc;
+	}
 	
 	public static Direction opposite(Direction d) {
 		switch (d) {
@@ -15,5 +21,10 @@ public enum Direction {
 			default:
 				throw new RuntimeException("Undefined Direction!");
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return this.desc;
 	}
 }

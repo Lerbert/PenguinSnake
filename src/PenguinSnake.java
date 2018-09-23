@@ -24,13 +24,15 @@ public class PenguinSnake {
 	private boolean finished;
 	private boolean paused;
 	
-	private GUI gui;
+	private GameGUI gameGUI;
+
+	private Editor levelEditor;
 	
 	public PenguinSnake() {
 		snake = new ArrayList<Integer>();
 		level = LevelFactory.createLevel(0);
-		gui = new GUI(level.getMaze(), new LevelListener());
-		gui.getFrame().addKeyListener(new KeyHandler());
+		gameGUI = new GameGUI(level.getMaze(), new LevelListener());
+		gameGUI.getFrame().addKeyListener(new KeyHandler());
 		init(level);
 	}
 	
@@ -161,7 +163,7 @@ public class PenguinSnake {
 		// Set head extra
 		dis[xPos(head)][yPos(head)] = SNAKE_HEAD;
 		
-		gui.updateState(dis);
+		gameGUI.updateState(dis);
 	}
 	
 	// x: pos >> 16 y: pos & 0xFFFF
@@ -208,7 +210,7 @@ public class PenguinSnake {
 		direction = level.getStartDirection();
 		lockedDirection = Direction.opposite(direction);
 		
-		gui.updateState(level.getMaze());
+		gameGUI.updateState(level.getMaze());
 		
 		display();
 		// sort of fix image loading
@@ -227,6 +229,7 @@ public class PenguinSnake {
 	}
 	
 	public static void main(String[] args) {
+		new Editor(21, 21);
 		new PenguinSnake();
 	}
 	

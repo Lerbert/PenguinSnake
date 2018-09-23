@@ -13,7 +13,7 @@ public class LevelFactory {
 	}
 	
 	public static Level createClassicLevel() {
-		int[][] level0 = new int[20][20];
+		int[][] level0 = new int[21][21];
 
 		for (int i = 0; i < level0.length; i++) {
 			for (int j = 0; j < level0[i].length; j++) {
@@ -21,11 +21,11 @@ public class LevelFactory {
 			}
 		}
 
-		return new Level(level0, "Classic", 9, 9, Direction.DOWN);
+		return new Level(level0, "Classic", 10, 10, Direction.DOWN);
 	}
 	
 	public static Level createArenaLevel() {
-		int[][] level1 = new int[20][20];
+		int[][] level1 = new int[21][21];
 
 	    for (int i = 0; i < level1.length; i++) {
 	      for (int j = 0; j < level1[i].length; j++) {
@@ -41,10 +41,23 @@ public class LevelFactory {
 	      level1[level1.length - 1][j] = Level.WALL;
 	    }
 	    
-	    return new Level(level1, "Arena", 9, 9, Direction.DOWN);
+	    return new Level(level1, "Arena", 10, 10, Direction.DOWN);
+	}
+	
+	public static Level createEmptyLevel(int width, int height) {
+		int[][] emptyLevel = new int[width][height];
+
+		for (int i = 0; i < emptyLevel.length; i++) {
+			for (int j = 0; j < emptyLevel[i].length; j++) {
+				emptyLevel[i][j] = Level.FREE;
+			}
+		}
+
+		return new Level(emptyLevel, "Empty", 0, 0, Direction.DOWN);
 	}
 	
 	private interface LevelCreator {
 		public Level create();
 	}
+		
 }
