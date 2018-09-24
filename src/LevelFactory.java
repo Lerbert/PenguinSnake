@@ -1,7 +1,7 @@
 
 public class LevelFactory {
-	public static final String[] levelNames = {"Classic", "Arena"};
-	private static final LevelCreator[] creators = {LevelFactory::createClassicLevel, LevelFactory::createArenaLevel};
+	public static final String[] levelNames = {"Classic", "Arena", "Sectors"};
+	private static final LevelCreator[] creators = {LevelFactory::createClassicLevel, LevelFactory::createArenaLevel, LevelFactory::createSectorsLevel};
 	
 	public static Level createLevel(int index) {
 		if (index < 0 || index >= creators.length) {
@@ -42,6 +42,26 @@ public class LevelFactory {
 	    }
 	    
 	    return new Level(level1, "Arena", 10, 10, Direction.DOWN);
+	}
+	
+	public static Level createSectorsLevel() {
+		int[][] level2 = new int[21][21];
+
+		for (int i = 0; i < level2.length; i++) {
+			for (int j = 0; j < level2[i].length; j++) {
+				level2[i][j] = Level.FREE;
+			}
+		}
+		
+		for (int i = 0; i < level2.length; i++) {
+			level2[i][10] = Level.WALL;
+		}
+
+		for (int i = 0; i < level2[10].length; i++) {
+			level2[10][i] = Level.WALL;
+		}
+
+		return new Level(level2, "Sectors", 5, 5, Direction.UP);
 	}
 	
 	public static Level createEmptyLevel(int width, int height) {

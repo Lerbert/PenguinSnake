@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -20,13 +22,23 @@ import javax.swing.JRadioButtonMenuItem;
 public class Editor {
 	private static final int IWH = 40;
 	private static double scale = 1.0;
-	private static final Direction defaultDirection = Direction.DOWN;
+	
+	private static final String defaultName = "Custom";
+	private static final int defaultStartX = 0;
+	private static final int defaultStartY = 0;
+	private static final Direction defaultStartDirection = Direction.DOWN;
+	
 	
 	private JFrame frame;
+	private JPanel fieldPanel;
 	
 	private int[][] state;
 	private int width;
 	private int height;
+	private String name;
+	private int startX;
+	private int startY;
+	private Direction startDirection;
 	
 	public Editor(int width, int height) {
 		this.width = width;
@@ -53,14 +65,13 @@ public class Editor {
 		JMenuItem size = new JMenuItem("Set size");
 		toolMenu.add(size);
 		
-		JMenuItem startPos = new JMenuItem("Set start position");
-		toolMenu.add(startPos);
-		
 		JMenu startDirection = new JMenu("Direction");
 		ButtonGroup directions = new ButtonGroup();
 		for (Direction d : Direction.values()) {
 			JRadioButtonMenuItem dir = new JRadioButtonMenuItem(d.toString());
-			if (d == defaultDirection) {
+			dir.setActionCommand(d.name());
+			dir.addActionListener(new DirectionListener());
+			if (d == defaultStartDirection) {
 				dir.setSelected(true);
 			}
 			directions.add(dir);
@@ -72,7 +83,7 @@ public class Editor {
 		
 		frame.add(menubar, BorderLayout.NORTH);
 		
-		JPanel fieldPanel = new JPanel();
+		fieldPanel = new JPanel();
 		//init fieldPanel
 		for (int y = 0; y < state[0].length; y++) {
 			for (int x = 0; x < state.length; x++) {
@@ -101,6 +112,18 @@ public class Editor {
 		frame.setVisible(false);
 	}
 	
+	public Level getLevel() {
+		int[][] maze = new int[width][height];
+		
+		for (int i = 0; i < state.length; i++) {
+			for (int j = 0; j < state[0].length; j++) {
+				maze[i][j] = state[i][j];
+			}
+		}
+		
+		return new Level(maze, name, startX, startY, startDirection);
+	}
+	
 	private class FieldListener implements MouseListener {
 		private Field field;
 		
@@ -110,37 +133,58 @@ public class Editor {
 		}
 		
 		@Override
-		public void mouseClicked(MouseEvent arg0) {
+		public void mouseClicked(MouseEvent e) {
 			int x = field.getXCoord();
 			int y = field.getYCoord();
+			int button = e.getButton();
 			
-			if (state[x][y] == Level.WALL) {
+			if (state[x][y] == Level.WALL && button == 1) {
 				state[x][y] = Level.FREE;
-			} else {
+			} else if (state[x][y] == Level.FREE && button == 1) {
 				state[x][y] = Level.WALL;
+			} else if (button == 3) {
+				state[startX][startY] = Level.FREE;
+				state[x][y] = PenguinSnake.SNAKE_HEAD;
+				startX = x;
+				startY = y;
 			}
 			
-			field.repaint();
+			fieldPanel.repaint();
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent arg0) {
+		public void mouseEntered(MouseEvent e) {
 			// Intentionally left blank
 		}
 
 		@Override
-		public void mouseExited(MouseEvent arg0) {
+		public void mouseExited(MouseEvent e) {
 			// Intentionally left blank
 		}
 
 		@Override
-		public void mousePressed(MouseEvent arg0) {
+		public void mousePressed(MouseEvent e) {
 			// Intentionally left blank
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
+		public void mouseReleased(MouseEvent e) {
 			// Intentionally left blank
+		}
+		
+	}
+	
+	private class DirectionListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String cmd = e.getActionCommand();
+			for (Direction d : Direction.values()) {
+				if (d.name().equals(cmd)) {
+					startDirection = d;
+					return;
+				}
+			}
 		}
 		
 	}
@@ -169,8 +213,20 @@ public class Editor {
 			}
 
 			g.fillRect(p.getLocation().x, p.getLocation().y, getWidth() * 2, getHeight());
+			
+			if (state[x][y] == PenguinSnake.SNAKE_HEAD) {
+				paintSymbol(g, Color.BLUE);
+			}
 		}
 
+		private void paintSymbol(Graphics g, Color c) {
+			GradientPaint gradient = new GradientPaint(15, 0, c, getWidth(), 0, Color.LIGHT_GRAY);
+			((Graphics2D) g).setPaint(gradient);
+			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			g.fillOval((int) (getWidth() * 0.3), (int) (getHeight() * 0.3), (int) (getWidth() * 0.5),
+					(int) (getHeight() * 0.5));
+		}
 
 		public int getXCoord() {
 			return x;      
