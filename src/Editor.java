@@ -10,8 +10,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -20,6 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
 public class Editor {
+	public static final int STARTPOINT = 100;
+	
 	private static final int IWH = 40;
 	private static double scale = 1.0;
 	
@@ -31,6 +41,7 @@ public class Editor {
 	
 	private JFrame frame;
 	private JPanel fieldPanel;
+	private ArrayList<JRadioButtonMenuItem> directionMenuItems;
 	
 	private int[][] state;
 	private int width;
@@ -43,7 +54,16 @@ public class Editor {
 	public Editor(int width, int height) {
 		this.width = width;
 		this.height = height;
+		
+		this.directionMenuItems = new ArrayList<JRadioButtonMenuItem>();
+		
+		// Set default values
 		this.state = LevelFactory.createEmptyLevel(width, height).getMaze();
+		this.name = defaultName;
+		this.startX = defaultStartX;
+		this.startY = defaultStartY;
+		this.startDirection = defaultStartDirection;
+		state[startX][startY] = STARTPOINT;
 		
 		frame = new JFrame("Level Editor");
 		frame.setLayout(new BorderLayout());
@@ -53,9 +73,11 @@ public class Editor {
 		JMenu fileMenu = new JMenu("File");
 		
 		JMenuItem open = new JMenuItem("Open");
+		open.addActionListener(new OpenListener());
 		fileMenu.add(open);
 		
 		JMenuItem save = new JMenuItem("Save");
+		save.addActionListener(new SaveListener());
 		fileMenu.add(save);
 		
 		menubar.add(fileMenu);
@@ -74,6 +96,7 @@ public class Editor {
 			if (d == defaultStartDirection) {
 				dir.setSelected(true);
 			}
+			directionMenuItems.add(dir);
 			directions.add(dir);
 			startDirection.add(dir);
 		}
@@ -117,11 +140,74 @@ public class Editor {
 		
 		for (int i = 0; i < state.length; i++) {
 			for (int j = 0; j < state[0].length; j++) {
-				maze[i][j] = state[i][j];
+				if (state[i][j] == STARTPOINT) {
+					maze[i][j] = Level.FREE;
+				} else {
+					maze[i][j] = state[i][j];
+				}
 			}
 		}
 		
 		return new Level(maze, name, startX, startY, startDirection);
+	}
+	
+	public void setLevel(Level level) {
+		width = level.getWidth();
+		height = level.getHeight();
+		state = level.getMaze();
+		name = level.getName();
+		startX = level.getStartX();
+		startY = level.getStartY();
+		startDirection = level.getStartDirection();
+		
+		state[startX][startY] = STARTPOINT;
+		
+		for (JRadioButtonMenuItem dirItem : directionMenuItems) {
+			if (dirItem.getActionCommand().equals(startDirection.name())) {
+				dirItem.setSelected(true);
+			} else {
+				dirItem.setSelected(false);
+			}
+		}
+		
+		frame.repaint();
+	}
+	
+	public void save(File saveLocation) {		
+		try {
+			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(saveLocation));
+			os.writeObject(getLevel());
+			os.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("Specified path does not point to a file.");
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void openFile(File saveLocation) {
+		try {
+			ObjectInputStream is = new ObjectInputStream(new FileInputStream(saveLocation));
+			Object in = is.readObject();
+			is.close();
+			
+			Level level = null;
+			if (in instanceof Level) {
+				level = (Level) in;
+			} else {
+				System.err.println("Choose a level file.");
+			}
+			
+			if (level != null) {
+				setLevel(level);
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Specified path does not point to a file.");
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private class FieldListener implements MouseListener {
@@ -144,7 +230,7 @@ public class Editor {
 				state[x][y] = Level.WALL;
 			} else if (button == 3) {
 				state[startX][startY] = Level.FREE;
-				state[x][y] = PenguinSnake.SNAKE_HEAD;
+				state[x][y] = STARTPOINT;
 				startX = x;
 				startY = y;
 			}
@@ -189,6 +275,50 @@ public class Editor {
 		
 	}
 	
+	private class SaveListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			File levelDir = new File("./levels");
+			if (!levelDir.exists()) {
+				levelDir.mkdir();
+			}
+			
+			fileChooser.setCurrentDirectory(levelDir);
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
+			
+			if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+				File save = fileChooser.getSelectedFile();
+				save(save);
+			}
+		}
+		
+	}
+	
+	private class OpenListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			File levelDir = new File("./levels");
+			if (!levelDir.exists()) {
+				levelDir = new File(System.getProperty("user.dir"));
+			}
+			
+			fileChooser.setCurrentDirectory(levelDir);
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
+			
+			if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+				File level = fileChooser.getSelectedFile();
+				openFile(level);
+			}
+		}
+		
+	}
+	
 	// From PGDP TUM WS 17/18
 	@SuppressWarnings("serial")
 	private class Field extends JPanel {
@@ -214,7 +344,7 @@ public class Editor {
 
 			g.fillRect(p.getLocation().x, p.getLocation().y, getWidth() * 2, getHeight());
 			
-			if (state[x][y] == PenguinSnake.SNAKE_HEAD) {
+			if (state[x][y] == STARTPOINT) {
 				paintSymbol(g, Color.BLUE);
 			}
 		}

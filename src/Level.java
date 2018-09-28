@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class Level {
+@SuppressWarnings("serial")
+public class Level implements Serializable {
 	public static final int OUTSIDE = -1;
 	public static final int FREE = -2;
 	public static final int WALL = -3;
