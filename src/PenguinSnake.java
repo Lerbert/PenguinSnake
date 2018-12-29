@@ -45,8 +45,9 @@ public class PenguinSnake {
 				int next = move();
 				if (checkCollision(next)) {
 					finished = true;
-					System.out.println("Game over!\nScore: " + score);
-					System.out.println("Choose another level to continue or hit ESC to quit");
+					gameGUI.displayMessage("Game over!\nScore: " + score + "\nChoose another level to continue or hit ESC to quit", "Game over!");
+					// System.out.println("Game over!\nScore: " + score);
+					// System.out.println("Choose another level to continue or hit ESC to quit");
 					continue;
 				}
 				// update snake

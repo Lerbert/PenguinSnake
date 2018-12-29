@@ -15,6 +15,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
@@ -96,6 +97,10 @@ public class GameGUI {
 		return frame;
 	}
 	
+	
+	public void displayMessage(String message, String title) {
+		JOptionPane.showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE);
+	}
 	
 	// From PGDP TUM WS 17/18
 	@SuppressWarnings("serial")
