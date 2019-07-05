@@ -1,7 +1,13 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.ObjectInputStream;
+
+import javax.swing.JFileChooser;
 
 public class LevelFactory {
-	public static final String[] levelNames = {"Classic", "Arena", "Sectors"};
-	private static final LevelCreator[] creators = {LevelFactory::createClassicLevel, LevelFactory::createArenaLevel, LevelFactory::createSectorsLevel};
+	public static final String[] levelNames = {"Classic", "Arena", "Sectors", "Load..."};
+	private static final LevelCreator[] creators = {LevelFactory::createClassicLevel, LevelFactory::createArenaLevel, LevelFactory::createSectorsLevel, LevelFactory::loadLevel};
 	
 	public static Level createLevel(int index) {
 		if (index < 0 || index >= creators.length) {
@@ -62,6 +68,46 @@ public class LevelFactory {
 		}
 
 		return new Level(level2, "Sectors", 5, 5, Direction.UP);
+	}
+	
+	public static Level loadLevel() {
+		JFileChooser fileChooser = new JFileChooser();
+		File levelDir = new File("./levels");
+		if (!levelDir.exists()) {
+			levelDir = new File(System.getProperty("user.dir"));
+		}
+		
+		fileChooser.setCurrentDirectory(levelDir);
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		
+		if (fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+			return null;
+		}
+		
+		File saveLocation = fileChooser.getSelectedFile();
+		
+		try {
+			ObjectInputStream is = new ObjectInputStream(new FileInputStream(saveLocation));
+			Object in = is.readObject();
+			is.close();
+			
+			Level level = null;
+			if (in instanceof Level) {
+				level = (Level) in;
+			} else {
+				System.err.println("Choose a level file.");
+			}
+			
+			return level;
+		} catch (FileNotFoundException e) {
+			System.err.println("Specified path does not point to a file.");
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	public static Level createEmptyLevel(int width, int height) {

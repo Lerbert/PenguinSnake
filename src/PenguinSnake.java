@@ -276,7 +276,9 @@ public class PenguinSnake {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			int levelIndex = Integer.parseInt(e.getActionCommand());
-			requestRestart(LevelFactory.createLevel(levelIndex));
+			Level nextLevel = LevelFactory.createLevel(levelIndex);
+			nextLevel = nextLevel != null ? nextLevel : level;
+			requestRestart(nextLevel);
 		}
 		
 	}

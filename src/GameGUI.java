@@ -18,6 +18,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 
 public class GameGUI {
 	private static final int IWH = 40;
@@ -51,6 +52,9 @@ public class GameGUI {
 		ButtonGroup levelButtons = new ButtonGroup();
 		
 		for (int i = 0; i < LevelFactory.levelNames.length; i++) {
+			if (i == LevelFactory.levelNames.length - 1) {
+				levels.add(new JSeparator());
+			}
 			JRadioButtonMenuItem level = new JRadioButtonMenuItem(LevelFactory.levelNames[i]);
 			level.addActionListener(levelListener);
 			level.setActionCommand(Integer.toString(i));
